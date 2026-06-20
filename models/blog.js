@@ -8,10 +8,8 @@ const blogSchema = mongoose.Schema({
     required: true
   },
   author: {
-    type: String,
-    minLength: 6,
-    maxLength: 100,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   url: {
     type: String,
@@ -28,7 +26,7 @@ const blogSchema = mongoose.Schema({
     type: Number,
     min: 0,
     default: 0
-  },
+  }
 })
 
 blogSchema.set('toJSON', {

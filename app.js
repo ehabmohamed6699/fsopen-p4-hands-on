@@ -5,6 +5,7 @@ const {requestLogger, unknownEndpoint, errorHandler} = require('./utils/middlewa
 const logger = require('./utils/logger')
 const cors = require('cors')
 const blogsRouter = require('./controllers/blogs')
+const usersRouter = require('./controllers/users')
 
 const app = express()
 mongoose.set('strictQuery', false)
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
     `)
 })
 app.use('/api/blogs', blogsRouter)
+app.use('/api/users', usersRouter)
 
 app.use(unknownEndpoint)
 app.use(errorHandler)

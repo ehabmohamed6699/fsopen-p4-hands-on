@@ -1,20 +1,35 @@
-const {test, after, describe, beforeEach} = require('node:test')
+const {test, after, describe, beforeEach,before} = require('node:test')
 const assert = require('node:assert')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const {initialBlogs, blogsInDb, nonExistingId} = require('./blogs_test_helper')
 const Blog = require("../models/blog")
+const User = require('../models/user')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
+let savedUser;
 
-beforeEach(async () => {
-    await Blog.deleteMany({})
-    await Blog.insertMany(initialBlogs)
-    
-})
 
 describe('blogs API', () => {
+    before(async () => {
+        const passwordHash = await bcrypt.hash("12345678", 10)
+        const user = new User({
+        username: "dummyuserfortest",
+        name: "dummyname",
+        passwordHash: passwordHash
+        })
+        savedUser = await user.save()
+    })
+
+    beforeEach(async () => {
+        await Blog.deleteMany({})
+        await Blog.insertMany(initialBlogs.map(blog => {
+            return {...blog, author: savedUser._id}
+        }))
+        
+    })
     
     test('blogs are returned as JSON', async () => {
         
@@ -42,7 +57,7 @@ describe('blogs API', () => {
     test('a valid blog can be added', async () => {
         const newBlog = {
             title: "Typescript unarguably is the best thing to write software",
-            author: "Eyad Alsherif",
+            userId: savedUser.toJSON().id,
             url: "https://www.typescriptlang.org"
         }
         await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/)
@@ -53,7 +68,7 @@ describe('blogs API', () => {
         assert.strictEqual(data[2].likes, 0)
     })
 
-    test('blog without content is not added', async () => {
+    test('blog without url, or author is not added', async () => {
         const newBlog = {
             title: "Short"
         }
@@ -68,7 +83,6 @@ describe('blogs API', () => {
     test('a blog can be updated', async () => {
         const updates = {
             title: "I updated the first blog of them all",
-            author: "updated author",
             url: "http://valid.url.co",
             likes: 100
         }
@@ -78,7 +92,6 @@ describe('blogs API', () => {
         const updatedBlog = (await api.get(`/api/blogs/${data[0].id}`)).body
 
         assert.strictEqual(updatedBlog.title, updates.title)
-        assert.strictEqual(updatedBlog.author, updates.author)
         assert.strictEqual(updatedBlog.url, updates.url)
         assert.strictEqual(updatedBlog.likes, updates.likes)
     })
@@ -86,7 +99,6 @@ describe('blogs API', () => {
     test('a blog update with no likes keeps likes same', async () => {
         const updates = {
             title: "I updated the first blog of them all",
-            author: "updated author",
             url: "http://valid.url.co",
         }
         const data = await blogsInDb()
@@ -95,7 +107,6 @@ describe('blogs API', () => {
         const updatedBlog = (await api.get(`/api/blogs/${data[0].id}`)).body
 
         assert.strictEqual(updatedBlog.title, updates.title)
-        assert.strictEqual(updatedBlog.author, updates.author)
         assert.strictEqual(updatedBlog.url, updates.url)
         assert.strictEqual(updatedBlog.likes, oldLikes)
     })
@@ -103,7 +114,6 @@ describe('blogs API', () => {
     test('cannot update non existing blog', async () => {
         const updates = {
             title: "I updated the first blog of them all",
-            author: "updated author",
             url: "http://valid.url.co",
         }
         const nullId = await nonExistingId()
@@ -124,5 +134,6 @@ describe('blogs API', () => {
 })
 
 after(async () => {
+    await savedUser.deleteOne()
     await mongoose.connection.close()
 })
