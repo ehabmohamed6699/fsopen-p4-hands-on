@@ -1,0 +1,7 @@
+{
+    "db":{
+        "development":"MONGODB_URI",
+        "production":"MONGODB_URI",
+        "test":"TEST_MONGODB_URI"
+    }
+}

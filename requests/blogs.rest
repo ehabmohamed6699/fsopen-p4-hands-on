@@ -1,0 +1,32 @@
+GET http://localhost:3003/api/blogs
+
+###
+
+GET http://localhost:3003/api/blogs/6a36a2d2fc2fed5621231238
+
+###
+POST http://localhost:3003/api/blogs
+Content-Type: application/json
+
+{
+    "title":"PyTorch is dying again",
+    "author":"Mike Wazowski",
+    "url":"https://pytorch.org",
+    "likes":16
+}
+
+###
+
+PUT http://localhost:3003/api/blogs/6a36a2d2fc2fed5621231238
+Content-Type: application/json
+
+{
+    "title": "PyTorch is dying but edited",
+    "author": "Chick Hicks",
+    "url": "https://pytorch.org/nn",
+    "likes":20
+}
+
+###
+
+DELETE  http://localhost:3003/api/blogs/6a36a2d9fc2fed5621231239
