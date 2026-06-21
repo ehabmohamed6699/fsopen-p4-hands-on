@@ -1,5 +1,13 @@
 const lodash = require("lodash")
 
+const getToken = request => {
+  const authorization = request.get('authorization')
+  if(authorization && authorization.startsWith('Bearer ')){
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
+
 const totalLikes = (blogs) => {
     return blogs.reduce((total, x) => total + x.likes, 0)
 }
@@ -39,4 +47,4 @@ const mostLikes = (blogs) => {
     }
 }
 
-module.exports = {totalLikes, favoriteBlog, mostBlogs, mostLikes}
+module.exports = {getToken, totalLikes, favoriteBlog, mostBlogs, mostLikes}

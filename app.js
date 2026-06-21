@@ -6,6 +6,7 @@ const logger = require('./utils/logger')
 const cors = require('cors')
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 
 const app = express()
 mongoose.set('strictQuery', false)
@@ -30,6 +31,7 @@ app.get("/", (req, res) => {
         <h1 style="color:#2629F8;font-family:sans-serif">Welcome to our blog API</h1>    
     `)
 })
+app.use('/api/login', loginRouter)
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)
 

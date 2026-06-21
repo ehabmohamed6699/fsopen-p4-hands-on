@@ -1,6 +1,10 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
+const {SECRET} = require('../utils/config')
+const {getToken} = require('../utils/helpers')
+
 
 blogsRouter.get('/', async (request, response, next) => {
   
@@ -16,7 +20,12 @@ blogsRouter.get('/:id', async (request, response, next) => {
 })
 
 blogsRouter.post('/', async (request, response, next) => {
-  const user = await User.findById(request.body.userId)
+  const decodedToken = jwt.verify(getToken(request), SECRET)
+  if(!decodedToken.id){
+    return response.status(401).json({error: "Unauthorized"})
+  }
+
+  const user = await User.findById(decodedToken.id)
   if (!user){
     return response.status(400).json({ error: 'userId missing or not valid' })
   }
